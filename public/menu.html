@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الطعام</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding-bottom: 50px; }
+        header { background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.1); padding: 10px 20px; position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; }
+        .header-content { display: flex; align-items: center; gap: 15px; }
+        #company-logo-header, #restaurant-logo { max-height: 50px; border-radius: 8px; }
+        #category-title-header { font-size: 2em; color: #d35400; margin: 0; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        .menu-item { background: #fff; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,.1); overflow: hidden; display: flex; flex-direction: column; }
+        .menu-item img { width: 100%; height: 220px; object-fit: cover; }
+        .menu-item-content { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+        .menu-item-name { font-size: 1.5em; margin: 0 0 10px 0; }
+        .menu-item-description { color: #666; margin-bottom: 15px; min-height: 40px; flex-grow: 1; }
+        .menu-item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .menu-item-price { font-size: 1.3em; font-weight: 700; color: #27ae60; }
+        .add-to-cart-controls { display: flex; align-items: center; gap: 10px; }
+        .quantity-input { width: 50px; text-align: center; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .add-to-cart-btn { background-color: #d35400; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        #cart-icon { font-size: 2em; cursor: pointer; position: relative; }
+        #cart-count { position: absolute; top: -5px; right: -10px; background-color: red; color: #fff; border-radius: 50%; padding: 2px 6px; font-size: .6em; }
+        #cart-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,.5); }
+        .cart-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; }
+        .close-btn { color: #aaa; float: left; font-size: 28px; font-weight: 700; cursor: pointer; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        #cart-total { font-weight: 700; font-size: 1.2em; text-align: left; margin-top: 20px; }
+        #whatsapp-btn { background-color: #25d366; color: #fff; width: 100%; padding: 15px; font-size: 1.2em; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .floating-container { position: fixed; bottom: 30px; left: 30px; z-index: 1050; }
+        .floating-btn { width: 60px; height: 60px; background-color: #007bff; color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,.2); cursor: pointer; }
+        .floating-menu { position: absolute; bottom: 70px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,.2); padding: 10px; width: 200px; transform: scale(0); transform-origin: bottom left; transition: all .3s ease; }
+        .floating-menu.visible { transform: scale(1); }
+        .floating-menu a { display: flex; align-items: center; padding: 10px; color: #333; text-decoration: none; border-radius: 4px; }
+        .floating-menu a:hover { background-color: #f1f1f1; }
+        .floating-menu a span { font-size: 24px; margin-left: 15px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a id="back-link" href="/">
+                <img id="company-logo-header" src="/uploads/placeholder.jpg" alt="شعار الشركة">
+            </a>
+            <h1 id="category-title-header"></h1>
+        </div>
+        <div id="cart-icon" onclick="toggleCart()">🛒<span id="cart-count">0</span></div>
+    </header>
+    <div class="container" id="menu-container"></div>
+    <div id="cart-modal">
+        <div class="cart-content">
+            <span class="close-btn" onclick="toggleCart()">&times;</span>
+            <h2>سلة الطلبات</h2>
+            <div id="cart-items"></div>
+            <p id="cart-total">المجموع: 0.00 د.م</p>
+            <button id="whatsapp-btn" onclick="sendWhatsAppOrder()">إرسال الطلب عبر واتساب</button>
+        </div>
+    </div>
+    <div class="floating-container">
+        <div class="floating-menu" id="contact-menu">
+            <a id="whatsapp-link" href="#" target="_blank"><span>💬</span> واتساب</a>
+            <a id="tel-link" href="#"><span>📞</span> هاتف</a>
+            <a href="https://facebook.com/hamach.brahim07" target="_blank"><span>📘</span> فيسبوك</a>
+            <a href="https://www.instagram.com/crepe_ti" target="_blank"><span>📸</span> انستقرام</a>
+        </div>
+        <div class="floating-btn" id="contact-btn" onclick="toggleContactMenu()">✉️</div>
+    </div>
+
+    <script>
+        let cart = [];
+        let restaurantWhatsappNumber = ''; // Will hold the specific number for the current restaurant
+
+        const cartModal = document.getElementById("cart-modal");
+        const cartCount = document.getElementById("cart-count");
+        const cartItemsDiv = document.getElementById("cart-items");
+        const cartTotalP = document.getElementById("cart-total");
+
+        function toggleContactMenu() {
+            document.getElementById("contact-menu").classList.toggle("visible");
+        }
+
+        function toggleCart() {
+            cartModal.style.display = cartModal.style.display === "block" ? "none" : "block";
+        }
+
+        function addToCart(id, name, price, quantity) {
+            const existingItem = cart.find(item => item.id === id);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ id, name, price, quantity });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            cartItemsDiv.innerHTML = "";
+            let total = 0;
+            let count = 0;
+            cart.forEach((item, index) => {
+                cartItemsDiv.innerHTML += `<div class="cart-item"><div class="cart-item-details"><strong>${item.quantity} x ${item.name}</strong></div><span>${(item.price * item.quantity).toFixed(2)} د.م</span></div>`;
+                total += item.price * item.quantity;
+                count += item.quantity;
+            });
+            cartTotalP.textContent = `المجموع: ${total.toFixed(2)} د.م`;
+            cartCount.textContent = count;
+        }
+
+        function sendWhatsAppOrder() {
+            if (cart.length === 0) {
+                return alert("الرجاء إضافة أصناف إلى السلة أولاً!");
+            }
+            if (!restaurantWhatsappNumber) {
+                return alert("خطأ: رقم واتساب المطعم غير محدد.");
+            }
+            let message = "مرحباً، أود أن أطلب:\n\n";
+            cart.forEach(item => {
+                message += `- ${item.quantity} x ${item.name} (${item.price} د.م)\n`;
+            });
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            message += `\n*المجموع الإجمالي: ${total.toFixed(2)} د.م*`;
+            
+            const whatsappUrl = `https://wa.me/${restaurantWhatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, "_blank");
+        }
+
+        function handleAddToCart(id, name, price) {
+            const quantityInput = document.getElementById(`qty-${id}`);
+            const quantity = parseInt(quantityInput.value, 10);
+            if (quantity > 0) {
+                addToCart(id, name, price, quantity);
+            }
+        }
+        
+        async function buildMenuPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const restaurantId = urlParams.get("restaurant_id");
+            const category = decodeURIComponent(urlParams.get("category"));
+
+            if (!category || !restaurantId) {
+                return document.getElementById('menu-container').innerHTML = "<h1>خطأ: لم يتم تحديد المطعم أو القسم.</h1>";
+            }
+
+            document.title = category;
+            document.getElementById("category-title-header").textContent = category;
+            
+            // Fetch global settings for company logo
+            const settingsResponse = await fetch('/api/settings');
+            const settings = await settingsResponse.json();
+            if (settings.company_logo_filename) {
+                document.getElementById('company-logo-header').src = `/uploads/${settings.company_logo_filename}`;
+            }
+
+            // Fetch specific restaurant details (for its links)
+            const restoResponse = await fetch(`/api/restaurants/${restaurantId}`);
+            const restaurant = await restoResponse.json();
+            
+            document.getElementById("back-link").href = `/restaurant.html?id=${restaurantId}&name=${encodeURIComponent(restaurant.name)}`;
+            
+            if (restaurant) {
+                if (restaurant.whatsapp_number) {
+                    restaurantWhatsappNumber = restaurant.whatsapp_number;
+                    document.getElementById('whatsapp-link').href = `https://wa.me/${restaurant.whatsapp_number}`;
+                }
+                if (restaurant.phone_number) {
+                    document.getElementById('tel-link').href = `tel:+${restaurant.phone_number}`;
+                }
+            }
+
+            // Fetch products for the specific category and restaurant
+            const response = await fetch(`/api/products?restaurant_id=${restaurantId}&category=${encodeURIComponent(category)}`);
+            const products = await response.json();
+            const menuContainer = document.getElementById("menu-container");
+            const grid = document.createElement('div');
+            grid.className = 'menu-grid';
+            
+            if (products.length > 0) {
+                products.forEach(p => {
+                    grid.innerHTML += `
+                        <div class="menu-item">
+                            <img src="/uploads/${p.image_filename || 'placeholder.jpg'}" alt="${p.name}">
+                            <div class="menu-item-content">
+                                <h3 class="menu-item-name">${p.name}</h3>
+                                <p class="menu-item-description">${p.description || ""}</p>
+                                <div class="menu-item-footer">
+                                    <p class="menu-item-price">${p.price} د.م</p>
+                                    <div class="add-to-cart-controls">
+                                        <input class="quantity-input" type="number" value="1" min="1" id="qty-${p.id}">
+                                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price})">أضف للسلة</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                grid.innerHTML = "<p>لا توجد أصناف في هذا القسم حالياً.</p>";
+            }
+            menuContainer.innerHTML = '';
+            menuContainer.appendChild(grid);
+        }
+
+        buildMenuPage();
+    </script>
+</body>
+</html>

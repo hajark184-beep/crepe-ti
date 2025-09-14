@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>Crepe-ti</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="hero">
+        <img id="company-logo" src="" alt="Crepe-ti Logo" style="max-width: 150px; border-radius: 50%; margin-bottom: 20px; display: none;">
+        <h1 id="company-main-title">crepe-ti</h1>
+    </header>
+    <main class="restaurants-container">
+        <div class="restaurant-grid" id="restaurant-grid"></div>
+    </main>
+    <script>
+        async function buildHomepage() {
+            // Fetch global settings
+            const settingsResponse = await fetch('/api/settings');
+            const settings = await settingsResponse.json();
+
+            // Update company name
+            const companyMainTitle = document.getElementById('company-main-title');
+            companyMainTitle.textContent = settings.company_name || 'crepe-ti';
+            document.title = settings.company_name || 'crepe-ti'; // Update page title
+
+            // Update company logo
+            const companyLogo = document.getElementById('company-logo');
+            if (settings.company_logo_filename) {
+                companyLogo.src = `/uploads/${settings.company_logo_filename}`;
+                companyLogo.style.display = 'block';
+            } else {
+                companyLogo.style.display = 'none';
+            }
+
+            // Fetch restaurants
+            const response = await fetch('/api/restaurants');
+            const restaurants = await response.json();
+            const grid = document.getElementById('restaurant-grid');
+            grid.innerHTML = restaurants.map(resto => `
+                <a href="/restaurant.html?id=${resto.id}&name=${encodeURIComponent(resto.name)}">
+                    <div class="restaurant-card">
+                        ${resto.logo_filename ? `<img src="/uploads/${resto.logo_filename}" alt="${resto.name} Logo" style="max-width: 100px; max-height: 100px; border-radius: 50%; margin-bottom: 10px;">` : ''}
+                        <h2>${resto.name}</h2>
+                    </div>
+                </a>
+            `).join('');
+        }
+        buildHomepage();
+    </script>
+</body>
+</html>

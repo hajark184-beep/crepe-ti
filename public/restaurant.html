@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>أقسام المطعم</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="hero">
+        <img id="company-logo" src="" alt="Crepe-ti Logo" style="max-width: 120px; border-radius: 50%; margin-bottom: 20px;">
+        <h1 id="restaurant-title"></h1>
+        <p>اختر قسماً لتصفح القائمة</p>
+    </header>
+    <main class="categories-container">
+        <div class="category-grid" id="category-grid"></div>
+    </main>
+    <script>
+        async function buildRestaurantPage() {
+            // Fetch global settings for company logo
+            const settingsResponse = await fetch('/api/settings');
+            const settings = await settingsResponse.json();
+            if (settings.company_logo_filename) {
+                document.getElementById('company-logo').src = `/uploads/${settings.company_logo_filename}`;
+            }
+
+            // Get restaurant details from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const restaurantId = urlParams.get('id');
+            const restaurantName = decodeURIComponent(urlParams.get('name'));
+
+            document.getElementById('restaurant-title').textContent = restaurantName;
+            document.title = restaurantName;
+
+            // Fetch and display categories for this restaurant
+            const response = await fetch(`/api/categories?restaurant_id=${restaurantId}`);
+            const categories = await response.json();
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = categories.map(cat => `
+                <a href="/menu.html?restaurant_id=${restaurantId}&category=${encodeURIComponent(cat.name)}">
+                    <div class="category-card">
+                        <img src="/uploads/${cat.image_filename || 'placeholder.jpg'}" alt="${cat.name}">
+                        <div class="overlay"><h2>${cat.name}</h2></div>
+                    </div>
+                </a>
+            `).join('');
+        }
+        buildRestaurantPage();
+    </script>
+</body>
+</html>
