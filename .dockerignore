@@ -1,0 +1,2 @@
+# تجاهل مجلد node_modules لأنه سيتم تثبيته على الخادم
+node_modules/
