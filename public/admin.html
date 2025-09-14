@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>لوحة التحكم الشاملة</title>
+    <style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f4f7f6;margin:0}.container{max-width:1200px;margin:20px auto;padding:20px;background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.management-section{padding:20px;border:1px solid #ddd;border-radius:8px;margin-bottom:20px}h1,h2,h3{color:#333;text-align:center}form{margin-bottom:20px}input,select,textarea{width:calc(100% - 22px);padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:4px;font-family:inherit}textarea{resize:vertical;min-height:80px}button{padding:10px 20px;border:none;border-radius:4px;color:#fff;background-color:#007bff;cursor:pointer;font-size:16px;margin-top:5px}#login-screen{text-align:center;padding-top:100px}#dashboard{display:none}table{width:100%;border-collapse:collapse}th,td{padding:12px;border:1px solid #ddd;text-align:right}th{background-color:#f2f2f2}img.thumbnail{max-width:60px;border-radius:4px}.category-management{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}.category-item{border:1px solid #ddd;border-radius:8px;padding:15px;text-align:center}.category-item img{width:100px;height:100px;object-fit:cover;margin-bottom:10px;border-radius:4px}.company-logo-preview{max-width:100px;height:auto;margin-top:10px;border-radius:8px;}</style>
+</head>
+<body>
+    <div id="login-screen" class="container">
+        <h2>تسجيل الدخول</h2>
+        <form id="login-form">
+            <input type="text" id="username" value="admin" required>
+            <input type="password" id="password" value="12345" required>
+            <button type="submit">دخول</button>
+        </form>
+    </div>
+    <div id="dashboard" class="container" style="display:none;">
+        <h1>لوحة التحكم الشاملة</h1>
+
+        <div class="management-section">
+            <h2>إعدادات الشركة العامة</h2>
+            <form id="company-name-form">
+                <label for="company-name-input">اسم الشركة الرئيسي:</label>
+                <input type="text" id="company-name-input" value="crepe-ti" required>
+                <button type="submit">حفظ اسم الشركة</button>
+            </form>
+            <hr>
+            <form id="company-logo-form">
+                <label for="company-logo-file-input">شعار الشركة الرئيسي:</label>
+                <input type="file" id="company-logo-file-input" accept="image/*">
+                <button type="submit">رفع شعار الشركة</button>
+                <img id="company-logo-preview" class="company-logo-preview" src="" alt="شعار الشركة الحالي" style="display:none;">
+            </form>
+        </div>
+
+        <div class="management-section">
+            <label for="restaurant-select-main"><h2>اختر المطعم للإدارة:</h2></label>
+            <select id="restaurant-select-main"><option value="">-- اختر --</option></select>
+        </div>
+        <div id="restaurant-specific-controls" style="display: none;">
+            <div class="management-section">
+                <h3>إعدادات المطعم المحدّد</h3>
+                <form id="restaurant-name-form">
+                    <label for="restaurant-name-input">تعديل اسم المطعم:</label>
+                    <input type="text" id="restaurant-name-input" required>
+                    <button type="submit">حفظ الاسم</button>
+                </form>
+                <hr>
+                <form id="restaurant-logo-form">
+                    <label for="restaurant-logo-input">تغيير شعار المطعم:</label>
+                    <input type="file" id="restaurant-logo-input" accept="image/*" required>
+                    <button type="submit">رفع الشعار</button>
+                    <img id="restaurant-logo-preview" class="company-logo-preview" src="" alt="شعار المطعم الحالي" style="display:none;">
+                </form>
+            </div>
+            <div class="management-section">
+                <h3>إدارة صور الأقسام</h3>
+                <div id="category-management-grid" class="category-management"></div>
+            </div>
+            <div class="management-section">
+                <h3>إدارة الأصناف</h3>
+                <form id="product-form">
+                    <input type="hidden" id="product-id">
+                    <input type="text" id="product-name" placeholder="اسم الصنف" required>
+                    <textarea id="product-description" placeholder="وصف قصير للصنف..."></textarea>
+                    <input type="number" id="product-price" placeholder="السعر" step="0.01" required>
+                    <select id="product-category" required></select>
+                    <input type="file" id="product-image" accept="image/*">
+                    <button type="submit">إضافة صنف</button>
+                </form>
+                <table id="products-table">
+                    <thead><tr><th>الصورة</th><th>الاسم</th><th>السعر</th><th>القسم</th><th>إجراءات</th></tr></thead>
+                    <tbody id="products-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginScreen = document.getElementById('login-screen');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('login-form');
+        const mainSelect = document.getElementById('restaurant-select-main');
+        const controls = document.getElementById('restaurant-specific-controls');
+
+        // Company-level elements
+        const companyNameInput = document.getElementById('company-name-input');
+        const companyLogoFileInput = document.getElementById('company-logo-file-input');
+        const companyLogoPreview = document.getElementById('company-logo-preview');
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const response = await fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: '12345' }) });
+            if (response.ok) {
+                loginScreen.style.display = 'none';
+                dashboard.style.display = 'block';
+                loadRestaurants();
+                loadCompanySettings(); // Load company settings on dashboard display
+            } else { alert('فشل الدخول'); }
+        });
+
+        async function loadCompanySettings() {
+            const response = await fetch('/api/settings');
+            const settings = await response.json();
+            companyNameInput.value = settings.company_name || 'crepe-ti'; // Default value
+            if (settings.company_logo_filename) {
+                companyLogoPreview.src = `/uploads/${settings.company_logo_filename}?v=${new Date().getTime()}`;
+                companyLogoPreview.style.display = 'block';
+            } else {
+                companyLogoPreview.style.display = 'none';
+            }
+        }
+
+        document.getElementById('company-name-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = companyNameInput.value;
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: 'company_name', value: newName })
+            });
+            if (response.ok) { alert('تم تحديث اسم الشركة بنجاح!'); } else { alert('فشل تحديث اسم الشركة.'); }
+        });
+
+        document.getElementById('company-logo-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!companyLogoFileInput.files[0]) {
+                alert('الرجاء اختيار ملف صورة.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('logo', companyLogoFileInput.files[0]);
+            const response = await fetch('/api/company-logo', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                const data = await response.json();
+                alert('تم تحديث شعار الشركة بنجاح!');
+                companyLogoPreview.src = `/uploads/${data.filename}?v=${new Date().getTime()}`;
+                companyLogoPreview.style.display = 'block';
+            } else { alert('فشل تحديث الشعار.'); }
+        });
+
+        async function loadRestaurants() {
+            const response = await fetch('/api/restaurants');
+            const restaurants = await response.json();
+            mainSelect.innerHTML = '<option value="">-- اختر --</option>';
+            restaurants.forEach(r => { mainSelect.innerHTML += `<option value="${r.id}">${r.name}</option>`; });
+        }
+
+        mainSelect.addEventListener('change', () => {
+            const restaurantId = mainSelect.value;
+            if (restaurantId) {
+                controls.style.display = 'block';
+                loadRestaurantData(restaurantId);
+            } else {
+                controls.style.display = 'none';
+            }
+        });
+
+        async function loadRestaurantData(restaurantId) {
+            const restoResponse = await fetch(`/api/restaurants/${restaurantId}`);
+            const restaurant = await restoResponse.json();
+            document.getElementById('restaurant-name-input').value = restaurant.name;
+            const restaurantLogoPreview = document.getElementById('restaurant-logo-preview');
+            if (restaurant.logo_filename) {
+                restaurantLogoPreview.src = `/uploads/${restaurant.logo_filename}?v=${new Date().getTime()}`;
+                restaurantLogoPreview.style.display = 'block';
+            } else {
+                restaurantLogoPreview.style.display = 'none';
+            }
+            
+            const catResponse = await fetch(`/api/categories?restaurant_id=${restaurantId}`);
+            const categories = await catResponse.json();
+            const catGrid = document.getElementById('category-management-grid');
+            const catSelect = document.getElementById('product-category');
+            catGrid.innerHTML = '';
+            catSelect.innerHTML = '<option value="">-- اختر القسم --</option>';
+            categories.forEach(cat => {
+                catSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                catGrid.innerHTML += `<div class="category-item">
+                    <img src="/uploads/${cat.image_filename || 'placeholder.jpg'}" id="img-${cat.id}">
+                    <h3>${cat.name}</h3>
+                    <form onsubmit="updateCategoryImage(event, ${cat.id})">
+                        <input type="file" required><button type="submit">تحديث</button>
+                    </form>
+                </div>`;
+            });
+            const prodResponse = await fetch(`/api/products?restaurant_id=${restaurantId}`);
+            const products = await prodResponse.json();
+            const prodTbody = document.getElementById('products-tbody');
+            prodTbody.innerHTML = '';
+            products.forEach(p => {
+                prodTbody.innerHTML += `<tr>
+                    <td><img src="/uploads/${p.image_filename || 'placeholder.jpg'}" class="thumbnail"></td>
+                    <td>${p.name}</td><td>${p.price}</td><td>${p.category}</td>
+                    <td><button onclick="deleteProduct(${p.id})">حذف</button></td>
+                </tr>`;
+            });
+        }
+
+        document.getElementById('restaurant-name-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const restaurantId = mainSelect.value;
+            const newName = document.getElementById('restaurant-name-input').value;
+            const response = await fetch(`/api/restaurants/${restaurantId}/name`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName }) });
+            if (response.ok) { alert('تم تحديث الاسم بنجاح!'); loadRestaurants().then(() => { mainSelect.value = restaurantId; }); } else { alert('فشل تحديث الاسم.'); }
+        });
+
+        document.getElementById('restaurant-logo-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const restaurantId = mainSelect.value;
+            const fileInput = document.getElementById('restaurant-logo-input');
+            const formData = new FormData();
+            formData.append('logo', fileInput.files[0]);
+            const response = await fetch(`/api/restaurants/${restaurantId}/logo`, { method: 'POST', body: formData });
+            if (response.ok) { 
+                const data = await response.json();
+                alert('تم تحديث الشعار بنجاح!'); 
+                document.getElementById('restaurant-logo-preview').src = `/uploads/${data.filename}?v=${new Date().getTime()}`;
+                document.getElementById('restaurant-logo-preview').style.display = 'block';
+            } else { alert('فشل تحديث الشعار.'); }
+        });
+
+        window.updateCategoryImage = async (e, catId) => { e.preventDefault(); const formData = new FormData(); formData.append('image', e.target.querySelector('input').files[0]); const response = await fetch(`/api/categories/${catId}/image`, { method: 'PUT', body: formData }); if (response.ok) { const data = await response.json(); document.getElementById(`img-${catId}`).src = `/uploads/${data.filename}?v=${new Date().getTime()}`; alert('تم تحديث الصورة'); } };
+        window.deleteProduct = async (prodId) => { if(confirm('هل أنت متأكد؟')) { await fetch(`/api/products/${prodId}`, {method: 'DELETE'}); loadRestaurantData(mainSelect.value); } };
+        document.getElementById('product-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = new FormData(); formData.append('restaurant_id', mainSelect.value); formData.append('name', document.getElementById('product-name').value); formData.append('description', document.getElementById('product-description').value); formData.append('price', document.getElementById('product-price').value); formData.append('category', document.getElementById('product-category').value); if(document.getElementById('product-image').files[0]) { formData.append('image', document.getElementById('product-image').files[0]); } await fetch('/api/products', { method: 'POST', body: formData }); loadRestaurantData(mainSelect.value); e.target.reset(); });
+    });
+    </script>
+</body>
+</html>

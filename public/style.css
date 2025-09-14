@@ -1,0 +1,16 @@
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;background-color:#f4f4f4}
+.hero{background:linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),url(https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop) no-repeat center center;background-size:cover;color:#fff;padding:60px 20px;text-align:center}
+.hero h1{margin:0;font-size:3em}.hero p{font-size:1.2em}a{text-decoration:none}
+.restaurants-container{max-width:900px;margin:40px auto;padding:20px}
+.restaurant-grid{display:grid;grid-template-columns:1fr;gap:30px}
+.restaurant-card{background:#fff;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,.1);display:flex;align-items:center;padding:25px;transition:transform .2s}
+.restaurant-card:hover{transform:translateY(-5px)}
+.restaurant-card h2{font-size:2em;color:#d35400;margin:0}
+.categories-container{max-width:1200px;margin:40px auto;padding:20px}
+.categories-title{text-align:center;font-size:2.5em;color:#333;margin-bottom:40px}
+.category-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:30px}
+.category-card{position:relative;overflow:hidden;border-radius:15px;box-shadow:0 10px 20px rgba(0,0,0,.2);transition:transform .3s ease}
+.category-card:hover{transform:scale(1.05)}
+.category-card img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.9)}
+.category-card .overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(rgba(0,0,0,0) 50%,rgba(0,0,0,.8));display:flex;align-items:flex-end}
+.category-card h2{color:#fff;margin:20px;font-size:2em}
