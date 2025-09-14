@@ -72,7 +72,7 @@ function seedDatabase(callback) {
                 db.run(`INSERT INTO restaurants (name, whatsapp_number, phone_number) VALUES (?, ?, ?)`, ['مطعم سلا الجديدة', '212634959651', '212634959651'], function(err) {
                     if (err) return console.error("Seed R1:", err.message);
                     seedRestaurantData(this.lastID, restaurant1_menu, () => {
-                        db.run(`INSERT INTO restaurants (name, whatsapp_number, phone_number) VALUES (?, ?, ?)`, ['مطعم سلا شاطئ مרינא', '212715636981', '212715636981'], function(err) {
+                        db.run(`INSERT INTO restaurants (name, whatsapp_number, phone_number) VALUES (?, ?, ?)`, ['مطعم  شاطئ سلا', '212715636981', '212715636981'], function(err) {
                             if (err) return console.error("Seed R2:", err.message);
                             seedRestaurantData(this.lastID, restaurant2_menu, () => {
                                 console.log("Seeding complete.");
@@ -100,4 +100,5 @@ function seedRestaurantData(restoId, menu, callback) {
 function startServer(){
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 }
